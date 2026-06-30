@@ -1,5 +1,4 @@
-Here's your complete README.md — paste this into your README.md file:
-markdown# Cartify 🛍️
+ Cartify 🛍️
 
 > A full-stack e-commerce mobile application built with Flutter, featuring real payment processing, phone OTP authentication, and a complete shopping experience from browsing to order confirmation.
 
