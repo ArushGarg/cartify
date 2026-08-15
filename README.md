@@ -1,5 +1,4 @@
- Cartify 🛍️
-
+Cartify 🛍️
 > A full-stack e-commerce mobile application built with Flutter, featuring real payment processing, phone OTP authentication, and a complete shopping experience from browsing to order confirmation.
 
 <p align="center">
@@ -17,23 +16,23 @@
 ---
 
 ## 📱 Screenshots
-
+ 
 | Splash | Login | OTP Verification |
-|--------|-------|-----------------|
-| ![Splash](screenshots/splash.png) | ![Login](screenshots/login.png) | ![OTP](screenshots/otp.png) |
-
-| Home | Product Detail | Wishlist |
-|------|---------------|---------|
-| ![Home](screenshots/home.png) | ![Detail](screenshots/detail.png) | ![Wishlist](screenshots/wishlist.png) |
-
-| Cart | Checkout | Order Success |
-|------|---------|--------------|
-| ![Cart](screenshots/cart.png) | ![Checkout](screenshots/checkout.png) | ![Success](screenshots/success.png) |
-
-| Order History | Profile | Search |
-|--------------|---------|--------|
-| ![Orders](screenshots/orders.png) | ![Profile](screenshots/profile.png) | ![Search](screenshots/search.png) |
-
+|--------|-------|-------------------|
+| <img width="1080" height="2340" alt="splash" src="https://github.com/user-attachments/assets/3d500bde-c5d6-4df7-ad0c-f46bcb65645e" /> | <img width="1080" height="2340" alt="login" src="https://github.com/user-attachments/assets/d12da8c5-557d-4f3f-964e-182fe718e7d0" /> | <img width="1080" height="2340" alt="otp" src="https://github.com/user-attachments/assets/3dd1a405-15d8-4589-bca6-2d1dc69554d0" /> |
+ 
+| Home | Search | Wishlist |
+|------|--------|----------|
+| <img width="1080" height="2340" alt="home" src="https://github.com/user-attachments/assets/f74d6374-a232-4825-b630-c782c4226315" /> | <img width="1080" height="2340" alt="search" src="https://github.com/user-attachments/assets/148b6339-215a-4e0e-aea8-4e1fb8089d31" /> | <img width="1080" height="2340" alt="wishlist" src="https://github.com/user-attachments/assets/2e7ffcfd-53ca-483d-aaad-71bc7ea61497" /> |
+ 
+| Cart | Checkout | Payment Options |
+|------|----------|------------------|
+| <img width="1080" height="2340" alt="cart" src="https://github.com/user-attachments/assets/2304e910-7b4b-4361-8254-d0f72c776b70" /> | <img width="1080" height="2340" alt="checkout" src="https://github.com/user-attachments/assets/596d1f12-334c-43e3-a3f3-0b5754a35e0b" /> | <img width="1080" height="2340" alt="payment" src="https://github.com/user-attachments/assets/50e41458-5b95-4884-8b60-e64788f633f6" /> |
+ 
+| Order Success | Profile | All Products |
+|----------------|---------|---------------|
+| <img width="1080" height="2340" alt="success" src="https://github.com/user-attachments/assets/151e6977-ea3a-4df8-a1f4-e45e64dc9f7d" /> | <img width="1080" height="2340" alt="profile" src="https://github.com/user-attachments/assets/ee9cc0ce-0d4d-4f42-a238-1603eea15c27" /> | <img width="1080" height="2340" alt="products" src="https://github.com/user-attachments/assets/388768b7-0007-46c9-8218-ada4eecc2f0c" /> |
+ 
 ---
 
 ## 🎥 Demo Video
@@ -61,6 +60,7 @@
 ---
 
 ## 🏗️ Architecture
+
 Flutter App (Frontend)
 ↕ HTTP requests
 Node.js + Express (Backend — Render)
@@ -74,6 +74,7 @@ Twilio SMS
 ---
 
 ## 🗂️ Folder Structure
+
 lib/
 ├── core/
 │   ├── constants/
@@ -187,7 +188,6 @@ order_items (id, order_id, product_id, quantity, price)
 - Twilio account (for OTP)
 
 ### Frontend Setup
-
 ```bash
 # Clone the repo
 git clone https://github.com/ArushGarg/cartify.git
@@ -206,7 +206,6 @@ flutter run
 ```
 
 ### Backend Setup
-
 ```bash
 # Clone backend repo
 git clone https://github.com/ArushGarg/cartify-backend.git
@@ -224,7 +223,6 @@ node server.js
 ```
 
 ### Backend API Endpoints
-
 | Method | Endpoint | Description |
 |--------|---------|-------------|
 | POST | `/api/payment/create-order` | Create Razorpay order |
@@ -241,16 +239,6 @@ node server.js
 
 ---
 
-## 📸 Taking Screenshots
-
-To add your own screenshots:
-1. Run the app on a device or emulator
-2. Take screenshots of each screen
-3. Create a `screenshots/` folder in the project root
-4. Name them: `splash.png`, `login.png`, `otp.png`, `home.png`, `detail.png`, `wishlist.png`, `cart.png`, `checkout.png`, `success.png`, `orders.png`, `profile.png`, `search.png`
-
----
-
 ## 🔮 Upcoming Features
 
 - [ ] Google Sign-In
@@ -264,7 +252,6 @@ To add your own screenshots:
 ## 👨‍💻 Author
 
 **Arush Garg**
-
 > Final year B.Tech Computer Science student at AKGEC, Ghaziabad. Flutter developer with internship experience at Dolat Digital and RadhaVallabh Healthcare.
 
 <p align="left">
