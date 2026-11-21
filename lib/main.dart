@@ -1,22 +1,39 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'features/products/providers/product_provider.dart';
-import 'features/cart/providers/cart_provider.dart';
-import 'features/orders/providers/order_provider.dart';
-import 'features/payment/providers/payment_provider.dart';
-import 'features/auth/providers/auth_provider.dart';
-import 'features/auth/screens/splash_screen.dart';
-import 'core/theme/app_theme.dart';
-import 'features/wishlist/providers/wishlist_provider.dart';
 
-void main() async {
+import 'core/config/app_config.dart';
+import 'core/di/injection.dart';
+import 'core/observers/app_bloc_observer.dart';
+import 'core/theme/app_theme.dart';
+import 'features/auth/cubit/auth_cubit.dart';
+import 'features/auth/screens/splash_screen.dart';
+import 'features/cart/cubit/cart_cubit.dart';
+import 'features/orders/cubit/orders_cubit.dart';
+import 'features/products/bloc/search_bloc.dart';
+import 'features/products/cubit/product_cubit.dart';
+import 'features/wishlist/cubit/wishlist_cubit.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Supabase.initialize(
-    url: 'https://mchcdgvgwwpwjwumfyvi.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jaGNkZ3Znd3dwd2p3dW1meXZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NjQ2ODEsImV4cCI6MjA5ODI0MDY4MX0.VfBBOBS7X_4LGmwNLDIuM2h5llplbr42DyTQ_ycLOtk',
+  Bloc.observer = AppBlocObserver();
+
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: kIsWeb
+        ? HydratedStorage.webStorageDirectory
+        : await getApplicationDocumentsDirectory(),
   );
+
+  await Supabase.initialize(
+    url: AppConfig.supabaseUrl,
+    anonKey: AppConfig.supabaseAnonKey,
+  );
+
+  setupDependencies();
 
   runApp(const CartifyApp());
 }
@@ -26,14 +43,15 @@ class CartifyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
+    return MultiBlocProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => ProductProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => OrderProvider()),
-        ChangeNotifierProvider(create: (_) => PaymentProvider()),
-        ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        BlocProvider(create: (_) => getIt<AuthCubit>()),
+        BlocProvider(create: (_) => getIt<ProductCubit>()..load()),
+        BlocProvider(create: (_) => getIt<SearchBloc>()),
+        BlocProvider(create: (_) => getIt<CartCubit>()),
+        BlocProvider(create: (_) => getIt<WishlistCubit>()),
+        BlocProvider(create: (_) => getIt<OrdersCubit>()),
+        // CheckoutBloc is NOT here: it is scoped to the checkout route
       ],
       child: MaterialApp(
         title: 'Cartify',

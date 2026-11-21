@@ -9,8 +9,6 @@ class PaymentProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  // Replace with your local IP when testing on emulator
-  // For emulator use: http://10.0.2.2:3000
   static const String baseUrl = 'https://cartify-backend-xfir.onrender.com';
 
   Function(PaymentSuccessResponse)? onSuccess;
@@ -51,7 +49,7 @@ class PaymentProvider extends ChangeNotifier {
           'amount': amount,
           'currency': 'INR',
         }),
-      ).timeout(const Duration(seconds: 60)); // add this
+      ).timeout(const Duration(seconds: 60));
 
       final data = jsonDecode(response.body);
       if (data['success']) {
@@ -92,6 +90,36 @@ class PaymentProvider extends ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>?> validateCoupon(
+      String code, double cartTotal) async {
+    try {
+      // Wake up Render if sleeping
+      await http.get(Uri.parse(baseUrl)).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => http.Response('timeout', 408),
+      );
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/coupon/validate'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'code': code,
+          'cart_total': cartTotal,
+        }),
+      ).timeout(const Duration(seconds: 60));
+
+      final data = jsonDecode(response.body);
+      if (data['success']) {
+        return data['data'];
+      } else {
+        return {'error': data['message']};
+      }
+    } catch (e) {
+      debugPrint('Coupon error: $e');
+      return {'error': 'Something went wrong. Try again.'};
+    }
+  }
+
   void openPaymentSheet({
     required String orderId,
     required double amount,
@@ -100,7 +128,7 @@ class PaymentProvider extends ChangeNotifier {
     required String customerPhone,
   }) {
     var options = {
-      'key': 'rzp_test_T79hR4fYcrUflr', // replace with your key
+      'key': 'rzp_test_T79hR4fYcrUflr',
       'amount': (amount * 100).toInt(),
       'currency': 'INR',
       'name': 'Cartify',
@@ -111,7 +139,7 @@ class PaymentProvider extends ChangeNotifier {
         'email': customerEmail,
         'contact': customerPhone,
       },
-      'theme': {'color': '#6C63FF'},
+      'theme': {'color': '#FF6B6B'},
     };
 
     try {

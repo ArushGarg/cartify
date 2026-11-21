@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../features/products/models/product_model.dart';
 import '../../features/cart/providers/cart_provider.dart';
-import '../theme/app_theme.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
+import '../theme/app_theme.dart';
 
-class ProductCard extends StatefulWidget {
+class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onTap;
 
@@ -17,47 +17,44 @@ class ProductCard extends StatefulWidget {
   });
 
   @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  bool _isWishlisted = false;
-
-  @override
   Widget build(BuildContext context) {
+    final originalPrice = product.price * 1.4;
+    final discountPercent =
+    ((originalPrice - product.price) / originalPrice * 100).round();
+
     return GestureDetector(
-      onTap: widget.onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: AppTheme.cardShadow,
-              ),
-              clipBehavior: Clip.hardEdge,
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image section
+            Expanded(
+              flex: 3,
               child: Stack(
                 children: [
                   // Product image
-                  CachedNetworkImage(
-                    imageUrl: widget.product.imageUrl,
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: const Color(0xFFF0F0F0),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: const Color(0xFFF0F0F0),
-                      child: const Icon(Icons.image_outlined,
-                          color: AppTheme.textSecondary),
+                  Positioned.fill(
+                    child: CachedNetworkImage(
+                      imageUrl: product.imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                          color: const Color(0xFFF0F0F0)),
+                      errorWidget: (context, url, error) => Container(
+                        color: const Color(0xFFF0F0F0),
+                        child: const Icon(Icons.image_outlined,
+                            color: AppTheme.textSecondary),
+                      ),
                     ),
                   ),
 
-                  // Sale badge
+                  // NEW badge
                   Positioned(
                     top: 10,
                     left: 10,
@@ -66,7 +63,7 @@ class _ProductCardState extends State<ProductCard> {
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppTheme.primary,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
                         'NEW',
@@ -74,36 +71,34 @@ class _ProductCardState extends State<ProductCard> {
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
                   ),
 
-                  // Replace the wishlist button with:
+                  // Wishlist button
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: GestureDetector(
-                      onTap: () => context
-                          .read<WishlistProvider>()
-                          .toggleWishlist(widget.product),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(color: Colors.black12, blurRadius: 4),
-                          ],
-                        ),
-                        child: Consumer<WishlistProvider>(
-                          builder: (context, wishlist, _) => Icon(
-                            wishlist.isWishlisted(widget.product.id)
+                    child: Consumer<WishlistProvider>(
+                      builder: (context, wishlist, _) => GestureDetector(
+                        onTap: () => wishlist.toggleWishlist(product),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black12, blurRadius: 4),
+                            ],
+                          ),
+                          child: Icon(
+                            wishlist.isWishlisted(product.id)
                                 ? Icons.favorite
                                 : Icons.favorite_border,
                             size: 16,
-                            color: wishlist.isWishlisted(widget.product.id)
+                            color: wishlist.isWishlisted(product.id)
                                 ? AppTheme.primary
                                 : AppTheme.textSecondary,
                           ),
@@ -111,82 +106,121 @@ class _ProductCardState extends State<ProductCard> {
                       ),
                     ),
                   ),
-
-                  // Add to cart button
-                  Positioned(
-                    right: 8,
-                    bottom: 8,
-                    child: GestureDetector(
-                      onTap: () {
-                        context
-                            .read<CartProvider>()
-                            .addToCart(widget.product);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                '${widget.product.name} added to bag'),
-                            duration: const Duration(seconds: 1),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: AppTheme.textPrimary,
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black12, blurRadius: 6),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          size: 18,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.product.name,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13.5,
-              color: AppTheme.textPrimary,
+
+            // Info section
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      product.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: AppTheme.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    // Rating
+                    Row(
+                      children: [
+                        const Icon(Icons.star_rounded,
+                            color: AppTheme.star, size: 14),
+                        const SizedBox(width: 3),
+                        Text(
+                          '4.${(product.stock % 5 + 5)}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Price row + add button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '₹${product.price.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  '₹${originalPrice.toStringAsFixed(0)}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppTheme.textSecondary,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$discountPercent%',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppTheme.success,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+
+                        // Coral + button
+                        Consumer<CartProvider>(
+                          builder: (context, cart, _) => GestureDetector(
+                            onTap: () {
+                              cart.addToCart(product);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content:
+                                  Text('${product.name} added to bag'),
+                                  duration: const Duration(seconds: 1),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: AppTheme.textPrimary,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                gradient: AppTheme.primaryGradient,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.add,
+                                  color: Colors.white, size: 18),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Row(
-            children: [
-              Text(
-                '₹${widget.product.price.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14.5,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '₹${(widget.product.price * 1.2).toStringAsFixed(0)}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.textSecondary,
-                  decoration: TextDecoration.lineThrough,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
