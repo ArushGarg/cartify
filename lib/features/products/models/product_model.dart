@@ -1,13 +1,7 @@
-class Product {
-  final String id;
-  final String name;
-  final String description;
-  final double price;
-  final String imageUrl;
-  final String category;
-  final int stock;
+import 'package:equatable/equatable.dart';
 
-  Product({
+class Product extends Equatable {
+  const Product({
     required this.id,
     required this.name,
     required this.description,
@@ -17,15 +11,35 @@ class Product {
     required this.stock,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'] ?? '',
-      price: (json['price'] as num).toDouble(),
-      imageUrl: json['image_url'] ?? '',
-      category: json['category'] ?? '',
-      stock: json['stock'] ?? 0,
-    );
-  }
+  final String id;
+  final String name;
+  final String description;
+  final double price;
+  final String imageUrl;
+  final String category;
+  final int stock;
+
+  factory Product.fromJson(Map<String, dynamic> json) => Product(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    description: (json['description'] as String?) ?? '',
+    price: (json['price'] as num).toDouble(),
+    imageUrl: (json['image_url'] as String?) ?? '',
+    category: (json['category'] as String?) ?? '',
+    stock: (json['stock'] as int?) ?? 0,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'description': description,
+    'price': price,
+    'image_url': imageUrl,
+    'category': category,
+    'stock': stock,
+  };
+
+  @override
+  List<Object?> get props =>
+      [id, name, description, price, imageUrl, category, stock];
 }
