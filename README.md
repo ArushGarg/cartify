@@ -1,4 +1,4 @@
-Cartify 🛍️
+# Cartify 🛍️
 > A full-stack e-commerce mobile application built with Flutter, featuring real payment processing, phone OTP authentication, and a complete shopping experience from browsing to order confirmation.
 
 <p align="center">
@@ -16,23 +16,23 @@ Cartify 🛍️
 ---
 
 ## 📱 Screenshots
- 
+
 | Splash | Login | OTP Verification |
 |--------|-------|-------------------|
 | <img width="1080" height="2340" alt="splash" src="https://github.com/user-attachments/assets/3d500bde-c5d6-4df7-ad0c-f46bcb65645e" /> | <img width="1080" height="2340" alt="login" src="https://github.com/user-attachments/assets/d12da8c5-557d-4f3f-964e-182fe718e7d0" /> | <img width="1080" height="2340" alt="otp" src="https://github.com/user-attachments/assets/3dd1a405-15d8-4589-bca6-2d1dc69554d0" /> |
- 
+
 | Home | Search | Wishlist |
 |------|--------|----------|
 | <img width="1080" height="2340" alt="home" src="https://github.com/user-attachments/assets/f74d6374-a232-4825-b630-c782c4226315" /> | <img width="1080" height="2340" alt="search" src="https://github.com/user-attachments/assets/148b6339-215a-4e0e-aea8-4e1fb8089d31" /> | <img width="1080" height="2340" alt="wishlist" src="https://github.com/user-attachments/assets/2e7ffcfd-53ca-483d-aaad-71bc7ea61497" /> |
- 
+
 | Cart | Checkout | Payment Options |
 |------|----------|------------------|
 | <img width="1080" height="2340" alt="cart" src="https://github.com/user-attachments/assets/2304e910-7b4b-4361-8254-d0f72c776b70" /> | <img width="1080" height="2340" alt="checkout" src="https://github.com/user-attachments/assets/596d1f12-334c-43e3-a3f3-0b5754a35e0b" /> | <img width="1080" height="2340" alt="payment" src="https://github.com/user-attachments/assets/50e41458-5b95-4884-8b60-e64788f633f6" /> |
- 
+
 | Order Success | Profile | All Products |
 |----------------|---------|---------------|
 | <img width="1080" height="2340" alt="success" src="https://github.com/user-attachments/assets/151e6977-ea3a-4df8-a1f4-e45e64dc9f7d" /> | <img width="1080" height="2340" alt="profile" src="https://github.com/user-attachments/assets/ee9cc0ce-0d4d-4f42-a238-1603eea15c27" /> | <img width="1080" height="2340" alt="products" src="https://github.com/user-attachments/assets/388768b7-0007-46c9-8218-ada4eecc2f0c" /> |
- 
+
 ---
 
 ## 🎥 Demo Video
@@ -56,38 +56,85 @@ Cartify 🛍️
 - 🔒 **Payment Verification** — HMAC-SHA256 signature verification on backend
 - 📦 **Order History** — All past orders with status badges and payment IDs
 - 👤 **Profile Screen** — User info, order history, logout with confirmation
+- 🧩 **BLoC/Cubit State Management** — Centralized and predictable application state management
+- 💾 **Persistent State** — HydratedBloc automatically saves and restores cart and wishlist data
+- ⚙️ **Dependency Injection** — GetIt for centralized dependency management
 
 ---
 
 ## 🏗️ Architecture
 
-Flutter App (Frontend)
+**Flutter App (Frontend)**
+
+- Feature-based architecture
+- BLoC/Cubit state management using flutter_bloc
+- GetIt dependency injection
+- HydratedBloc for local state persistence
+- Centralized BLoC observer for state transition monitoring
+
 ↕ HTTP requests
-Node.js + Express (Backend — Render)
+
+**Node.js + Express (Backend — Render)**
+
 ↕ Razorpay API calls
-Razorpay Payment Gateway
+
+**Razorpay Payment Gateway**
+
 ↕ stores data
-Supabase PostgreSQL (Database)
+
+**Supabase PostgreSQL (Database)**
+
 ↕ Phone OTP
-Twilio SMS
+
+**Twilio SMS**
+
+---
+
+## 🧩 State Management
+
+Cartify has been migrated from Provider (ChangeNotifier) to BLoC/Cubit using the `flutter_bloc` package.
+
+The new architecture separates business logic from UI components and provides a more structured approach to managing application state.
+
+| Component | State Management | Responsibility |
+|-----------|------------------|----------------|
+| Authentication | AuthCubit | Phone authentication and user session |
+| Products | ProductCubit | Product loading and state management |
+| Search | SearchBloc | Search events and product filtering |
+| Cart | CartCubit | Add, remove, increment, decrement and cart calculations |
+| Wishlist | WishlistCubit | Wishlist management and product toggling |
+| Orders | OrdersCubit | Order history and order state management |
+| Checkout | CheckoutBloc | Payment and checkout flow |
+
+**Additional Architecture Improvements:**
+
+- **HydratedBloc:** Persistent cart and wishlist state across application restarts.
+- **GetIt:** Centralized dependency injection and service access.
+- **BlocObserver:** Centralized monitoring of BLoC/Cubit state transitions.
+- **Equatable:** Value-based equality for states and efficient state comparisons.
+- **Feature-based organization:** Each feature maintains its own state management and UI components.
 
 ---
 
 ## 🗂️ Folder Structure
 
+```text
 lib/
 ├── core/
-│   ├── constants/
-│   │   └── app_banners.dart
+│   ├── config/
+│   │   └── app_config.dart
+│   ├── di/
+│   │   └── injection.dart
+│   ├── observers/
+│   │   └── app_bloc_observer.dart
 │   ├── theme/
 │   │   └── app_theme.dart
 │   └── widgets/
-│       ├── banner_carousel.dart
 │       └── product_card.dart
 ├── features/
 │   ├── auth/
-│   │   ├── providers/
-│   │   │   └── auth_provider.dart
+│   │   ├── cubit/
+│   │   │   └── auth_cubit.dart
 │   │   └── screens/
 │   │       ├── splash_screen.dart
 │   │       ├── login_screen.dart
@@ -97,8 +144,10 @@ lib/
 │   ├── products/
 │   │   ├── models/
 │   │   │   └── product_model.dart
-│   │   ├── providers/
-│   │   │   └── product_provider.dart
+│   │   ├── bloc/
+│   │   │   └── search_bloc.dart
+│   │   ├── cubit/
+│   │   │   └── product_cubit.dart
 │   │   └── screens/
 │   │       ├── product_list_screen.dart
 │   │       ├── product_detail_screen.dart
@@ -106,45 +155,54 @@ lib/
 │   ├── cart/
 │   │   ├── models/
 │   │   │   └── cart_item_model.dart
-│   │   ├── providers/
-│   │   │   └── cart_provider.dart
+│   │   ├── cubit/
+│   │   │   └── cart_cubit.dart
 │   │   └── screens/
 │   │       └── cart_screen.dart
 │   ├── wishlist/
-│   │   ├── providers/
-│   │   │   └── wishlist_provider.dart
+│   │   ├── cubit/
+│   │   │   └── wishlist_cubit.dart
 │   │   └── screens/
 │   │       └── wishlist_screen.dart
 │   ├── orders/
 │   │   ├── models/
 │   │   │   └── order_model.dart
-│   │   ├── providers/
-│   │   │   └── order_provider.dart
+│   │   ├── cubit/
+│   │   │   └── orders_cubit.dart
 │   │   └── screens/
 │   │       └── order_history_screen.dart
 │   └── payment/
-│       ├── providers/
-│       │   └── payment_provider.dart
+│       ├── bloc/
+│       │   └── checkout_bloc.dart
 │       └── screens/
 │           ├── checkout_screen.dart
 │           └── order_success_screen.dart
 └── main.dart
+
+test/
+└── cart_cubit_test.dart
+```
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 | Technology | Purpose |
 |-----------|---------|
 | Flutter / Dart | Cross-platform mobile UI |
-| Provider (ChangeNotifier) | State management |
+| BLoC / Cubit (flutter_bloc) | State management |
+| HydratedBloc | Persistent local state management |
+| GetIt | Dependency injection |
+| Equatable | State equality and comparison |
 | Supabase Flutter SDK | Database + Auth |
 | Razorpay Flutter SDK | Payment gateway |
 | Cached Network Image | Optimized image loading |
 | Flutter SVG | SVG logo rendering |
 
 ### Backend
+
 | Technology | Purpose |
 |-----------|---------|
 | Node.js + Express | REST API server |
@@ -154,12 +212,41 @@ lib/
 | Render | Cloud deployment |
 
 ### Database & Auth
+
 | Technology | Purpose |
 |-----------|---------|
 | Supabase PostgreSQL | Relational database |
 | Row Level Security | Data isolation policies |
 | Supabase Auth | Phone OTP authentication |
 | Twilio | SMS delivery |
+
+---
+
+## 🧪 Testing
+
+Cartify includes unit tests for CartCubit to verify its business logic and state management.
+
+Current test coverage includes:
+
+- Initial empty cart state
+- Adding products and updating quantities
+- Item count and total amount calculations
+- Increment and decrement operations
+- Removing products from the cart
+- Clearing the cart
+- HydratedBloc state persistence across application restarts
+
+Run the tests using:
+
+```bash
+flutter test
+```
+
+Run static code analysis using:
+
+```bash
+flutter analyze
+```
 
 ---
 
@@ -181,6 +268,7 @@ order_items (id, order_id, product_id, quantity, price)
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Flutter SDK 3.x
 - Node.js 18+
 - Supabase account
@@ -188,6 +276,7 @@ order_items (id, order_id, product_id, quantity, price)
 - Twilio account (for OTP)
 
 ### Frontend Setup
+
 ```bash
 # Clone the repo
 git clone https://github.com/ArushGarg/cartify.git
@@ -196,16 +285,17 @@ cd cartify
 # Install dependencies
 flutter pub get
 
-# Add your credentials in lib/main.dart
-# Supabase URL and anon key
+# Configure Supabase credentials in:
+# lib/core/config/app_config.dart
 
-# Add Razorpay test key in lib/features/payment/providers/payment_provider.dart
+# Add your Razorpay test key in the payment configuration
 
 # Run the app
 flutter run
 ```
 
 ### Backend Setup
+
 ```bash
 # Clone backend repo
 git clone https://github.com/ArushGarg/cartify-backend.git
@@ -223,6 +313,7 @@ node server.js
 ```
 
 ### Backend API Endpoints
+
 | Method | Endpoint | Description |
 |--------|---------|-------------|
 | POST | `/api/payment/create-order` | Create Razorpay order |
