@@ -25,15 +25,19 @@ class OrdersCubit extends Cubit<OrdersState> {
   final OrderRepository _repo;
 
   Future<void> load() async {
-    emit(const OrdersState(status: OrdersStatus.loading));
+    // keep the current list on screen while refreshing
+    emit(OrdersState(status: OrdersStatus.loading, orders: state.orders));
     try {
       final orders = await _repo.fetchOrders();
       emit(OrdersState(status: OrdersStatus.success, orders: orders));
     } catch (_) {
-      emit(const OrdersState(
+      emit(OrdersState(
         status: OrdersStatus.failure,
+        orders: state.orders,
         errorMessage: 'Could not load your orders.',
       ));
     }
   }
+
+  void reset() => emit(const OrdersState());
 }

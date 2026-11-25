@@ -16,7 +16,9 @@ class CartState extends Equatable {
   List<Object?> get props => [items];
 }
 
-/// HydratedCubit = state is saved to disk automatically and restored on launch
+/// HydratedCubit = state is saved to disk automatically and restored on launch.
+/// Note: HydratedMixin already defines clear() (deletes the saved copy),
+/// so our own "empty the cart" method is called clearCart().
 class CartCubit extends HydratedCubit<CartState> {
   CartCubit() : super(const CartState());
 
@@ -56,7 +58,7 @@ class CartCubit extends HydratedCubit<CartState> {
     emit(CartState(items: updated));
   }
 
-  void clear() => emit(const CartState());
+  void clearCart() => emit(const CartState());
 
   @override
   CartState? fromJson(Map<String, dynamic> json) {

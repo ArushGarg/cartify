@@ -1,17 +1,43 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../models/product_model.dart';
-import '../../cart/providers/cart_provider.dart';
-import '../../cart/screens/cart_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/theme/app_theme.dart';
+import '../../cart/cubit/cart_cubit.dart';
+import '../../cart/screens/cart_screen.dart';
+import '../models/product_model.dart';
 
 class ProductDetailScreen extends StatelessWidget {
-  final Product product;
   const ProductDetailScreen({super.key, required this.product});
+
+  final Product product;
+
+  void _addToBag(BuildContext context) {
+    context.read<CartCubit>().add(product);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('${product.name} added to bag'),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppTheme.textPrimary,
+        ),
+      );
+  }
+
+  void _buyNow(BuildContext context) {
+    context.read<CartCubit>().add(product);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CartScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final inStock = product.stock > 0;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: CustomScrollView(
@@ -59,7 +85,6 @@ class ProductDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category tag
                   Text(
                     product.category.toUpperCase(),
                     style: const TextStyle(
@@ -112,23 +137,17 @@ class ProductDetailScreen extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
-                        product.stock > 0
+                        inStock
                             ? Icons.check_circle_outline
                             : Icons.cancel_outlined,
                         size: 16,
-                        color: product.stock > 0
-                            ? AppTheme.success
-                            : AppTheme.error,
+                        color: inStock ? AppTheme.success : AppTheme.error,
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        product.stock > 0
-                            ? '${product.stock} in stock'
-                            : 'Out of stock',
+                        inStock ? '${product.stock} in stock' : 'Out of stock',
                         style: TextStyle(
-                          color: product.stock > 0
-                              ? AppTheme.success
-                              : AppTheme.error,
+                          color: inStock ? AppTheme.success : AppTheme.error,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -140,31 +159,23 @@ class ProductDetailScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () {
-                            context.read<CartProvider>().addToCart(product);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content:
-                                Text('${product.name} added to bag'),
-                                duration: const Duration(seconds: 1),
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: AppTheme.textPrimary,
-                              ),
-                            );
-                          },
+                          onPressed: inStock ? () => _addToBag(context) : null,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.textPrimary,
+                            side: const BorderSide(
+                                color: AppTheme.border, width: 1.5),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
                           child: const Text('Add to Bag'),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {
-                            context.read<CartProvider>().addToCart(product);
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const CartScreen()));
-                          },
+                          onPressed: inStock ? () => _buyNow(context) : null,
                           child: const Text('Buy Now'),
                         ),
                       ),

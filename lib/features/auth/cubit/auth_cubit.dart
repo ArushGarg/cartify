@@ -30,7 +30,7 @@ class AuthFlowState extends Equatable {
       AuthFlowState(
         status: status ?? this.status,
         phone: phone ?? this.phone,
-        errorMessage: errorMessage,
+        errorMessage: errorMessage, // intentionally not preserved
       );
 
   @override
@@ -48,6 +48,13 @@ class AuthCubit extends Cubit<AuthFlowState> {
 
   final AuthRepository _repo;
 
+  /// Logged-in user's 10-digit number (Supabase stores it as 91XXXXXXXXXX)
+  String get phone10 {
+    final digits =
+    (state.phone ?? _repo.phone ?? '').replaceAll(RegExp(r'\D'), '');
+    return digits.length >= 10 ? digits.substring(digits.length - 10) : '';
+  }
+
   Future<void> sendOtp(String phone) async {
     emit(state.copyWith(status: AuthFlowStatus.sendingOtp, phone: phone));
     try {
@@ -59,17 +66,19 @@ class AuthCubit extends Cubit<AuthFlowState> {
     }
   }
 
-  /// Deliberately does NOT go through `sendingOtp -> otpSent`.
-  /// The Login screen is still alive under the OTP screen, and its listener
-  /// would push a second OTP screen if it saw that transition again.
-  Future<void> resendOtp() async {
+  /// Returns null on success, or an error message.
+  /// Deliberately emits NOTHING: the Login screen is still alive under the
+  /// OTP screen, and any status change here could trigger its listener.
+  Future<String?> resendOtp() async {
     final phone = state.phone;
-    if (phone == null) return;
+    if (phone == null) {
+      return 'Session expired. Go back and enter your number again.';
+    }
     try {
       await _repo.sendOtp(phone);
+      return null;
     } on AuthFailure catch (e) {
-      emit(state.copyWith(
-          status: AuthFlowStatus.failure, errorMessage: e.message));
+      return e.message;
     }
   }
 

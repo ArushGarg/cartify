@@ -25,7 +25,7 @@ class WishlistCubit extends HydratedCubit<WishlistState> {
     ));
   }
 
-  void clear() => emit(const WishlistState());
+  void clearWishlist() => emit(const WishlistState());
 
   @override
   WishlistState? fromJson(Map<String, dynamic> json) {

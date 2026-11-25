@@ -1,34 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../providers/auth_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/theme/app_theme.dart';
-import 'login_screen.dart';
+import '../../cart/cubit/cart_cubit.dart';
+import '../../orders/cubit/orders_cubit.dart';
 import '../../orders/screens/order_history_screen.dart';
+import '../../wishlist/cubit/wishlist_cubit.dart';
+import '../cubit/auth_cubit.dart';
+import 'login_screen.dart';
+
+const _navy = Color(0xFF0F1729);
+const _card = Color(0xFF1A2540);
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  Future<void> _confirmLogout(BuildContext context) async {
+  Future<void> _logout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'Log out?',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
+        backgroundColor: _card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Log out?',
+            style:
+            TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
         content: const Text(
           "You'll need to verify your phone number again to log back in.",
-          style: TextStyle(color: AppTheme.textSecondary),
+          style: TextStyle(color: Colors.white60),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Cancel',
-                style: TextStyle(color: AppTheme.textSecondary)),
+                style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -40,168 +44,170 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
 
-    if (confirmed == true && context.mounted) {
-      await context.read<AuthProvider>().signOut();
-      if (context.mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-              (route) => false,
-        );
-      }
-    }
+    if (confirmed != true || !context.mounted) return;
+
+    // Hydrated state is stored on the device, so wipe it for the next user
+    context.read<CartCubit>().clearCart();
+    context.read<WishlistCubit>().clearWishlist();
+    context.read<OrdersCubit>().reset();
+    await context.read<AuthCubit>().signOut();
+
+    if (!context.mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final phone = Supabase.instance.client.auth.currentUser?.phone ?? '';
-    final displayPhone = phone.isNotEmpty ? '+$phone' : 'Not available';
+    final phone = context.read<AuthCubit>().phone10;
+    final shown = phone.isEmpty
+        ? 'Not available'
+        : '+91 ${phone.substring(0, 5)} ${phone.substring(5)}';
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Account'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // User info card
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: AppTheme.cardShadow,
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: const BoxDecoration(
-                      color: AppTheme.background,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.person_outline,
-                        color: AppTheme.primary, size: 28),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Logged in',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.textSecondary),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          displayPhone,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Menu items
-            _menuTile(
-              context: context,
-              icon: Icons.receipt_long_outlined,
-              label: 'Order History',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const OrderHistoryScreen()),
-              ),
-            ),
-            _menuTile(
-              context: context,
-              icon: Icons.location_on_outlined,
-              label: 'Saved Addresses',
-              onTap: () {},
-            ),
-            _menuTile(
-              context: context,
-              icon: Icons.help_outline,
-              label: 'Help & Support',
-              onTap: () {},
-            ),
-
-            const Spacer(),
-
-            // Logout button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => _confirmLogout(context),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppTheme.error),
-                  foregroundColor: AppTheme.error,
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: _navy,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Account',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800)),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                    color: _card, borderRadius: BorderRadius.circular(20)),
+                child: Row(
                   children: [
-                    Icon(Icons.logout, size: 18, color: AppTheme.error),
-                    SizedBox(width: 8),
-                    Text('Log out',
-                        style: TextStyle(
-                            color: AppTheme.error,
-                            fontWeight: FontWeight.w600)),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.primaryGradient,
+                        shape: BoxShape.circle,
+                        boxShadow: AppTheme.primaryShadow,
+                      ),
+                      child: const Icon(Icons.person_rounded,
+                          color: Colors.white, size: 28),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Logged in as',
+                              style: TextStyle(
+                                  color: Colors.white38, fontSize: 12)),
+                          const SizedBox(height: 2),
+                          Text(shown,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              _MenuTile(
+                icon: Icons.receipt_long_outlined,
+                label: 'Order History',
+                color: const Color(0xFF6C63FF),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const OrderHistoryScreen()),
+                ),
+              ),
+              const _MenuTile(
+                icon: Icons.location_on_outlined,
+                label: 'Saved Addresses',
+                color: Color(0xFF2ECC71),
+              ),
+              const _MenuTile(
+                icon: Icons.help_outline,
+                label: 'Help & Support',
+                color: Color(0xFFF39C12),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _logout(context),
+                  icon: const Icon(Icons.logout, size: 18),
+                  label: const Text('Log out',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.error,
+                    side: const BorderSide(color: AppTheme.error),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50)),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _menuTile({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
+class _MenuTile extends StatelessWidget {
+  const _MenuTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: _card,
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           onTap: onTap,
-          child: Container(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: AppTheme.cardShadow,
-            ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             child: Row(
               children: [
-                Icon(icon, color: AppTheme.textPrimary, size: 22),
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14),
-                  ),
+                  child: Text(label,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14)),
                 ),
                 const Icon(Icons.chevron_right,
-                    color: AppTheme.textSecondary, size: 20),
+                    color: Colors.white38, size: 20),
               ],
             ),
           ),
